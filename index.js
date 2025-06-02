@@ -1,28 +1,56 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const Trabajo = require('./models/Trabajo');
-
-dotenv.config();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-// Conexión a MongoDB
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('🟢 Conectado a MongoDB'))
-    .catch((err) => console.error('🔴 Error conectando a MongoDB', err));
+// Modelo Trabajo simple (ajustalo según necesites)
+const trabajoSchema = new mongoose.Schema({
+  nombre: String,
+  cliente: String,
+  tipo: String,
+  tarifa: Number,
+  operador: String,
+  fecha: Date,
+});
+const Trabajo = mongoose.model('Trabajo', trabajoSchema);
 
-// Ruta de prueba para trabajos
-app.get('/api/trabajos', async (req, res) => {
-    const trabajos = await Trabajo.find();
-    res.json(trabajos);
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('🔗 Conectado a MongoDB');
+}).catch((error) => {
+  console.error('Error conectando a MongoDB:', error);
 });
 
-// Iniciar servidor
+// Endpoints
+
+// GET trabajos
+app.get('/api/trabajos', async (req, res) => {
+  try {
+    const trabajos = await Trabajo.find();
+    res.json(trabajos);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener trabajos' });
+  }
+});
+
+// POST nuevo trabajo
+app.post('/api/trabajos', async (req, res) => {
+  try {
+    const nuevoTrabajo = new Trabajo(req.body);
+    await nuevoTrabajo.save();
+    res.status(201).json(nuevoTrabajo);
+  } catch (error) {
+    res.status(400).json({ error: 'Error al crear trabajo' });
+  }
+});
+
+// Puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
+  console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
 });
