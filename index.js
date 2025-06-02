@@ -5,7 +5,12 @@ const mongoose = require('mongoose');
 const app = express();
 app.use(express.json());
 
-// Modelo Trabajo simple (ajustalo según necesites)
+// Conexión a MongoDB (solo con la URI, sin useNewUrlParser ni useUnifiedTopology)
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('🔗 Conectado a MongoDB Atlas'))
+  .catch((error) => console.error('❌ Error conectando a MongoDB:', error));
+
+// Modelo Trabajo (si no lo tenés ya definido)
 const trabajoSchema = new mongoose.Schema({
   nombre: String,
   cliente: String,
@@ -16,19 +21,9 @@ const trabajoSchema = new mongoose.Schema({
 });
 const Trabajo = mongoose.model('Trabajo', trabajoSchema);
 
-// Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log('🔗 Conectado a MongoDB');
-}).catch((error) => {
-  console.error('Error conectando a MongoDB:', error);
-});
+// ENDPOINTS
 
-// Endpoints
-
-// GET trabajos
+// GET todos los trabajos
 app.get('/api/trabajos', async (req, res) => {
   try {
     const trabajos = await Trabajo.find();
@@ -38,7 +33,7 @@ app.get('/api/trabajos', async (req, res) => {
   }
 });
 
-// POST nuevo trabajo
+// POST crear nuevo trabajo
 app.post('/api/trabajos', async (req, res) => {
   try {
     const nuevoTrabajo = new Trabajo(req.body);
@@ -49,7 +44,7 @@ app.post('/api/trabajos', async (req, res) => {
   }
 });
 
-// Puerto
+// Levantar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
