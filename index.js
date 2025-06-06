@@ -1,52 +1,41 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middlewares
+app.use(cors());
 app.use(express.json());
 
-// Conexión a MongoDB (solo con la URI, sin useNewUrlParser ni useUnifiedTopology)
+// MongoDB connection
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log('🔗 Conectado a MongoDB Atlas'))
-  .catch((error) => console.error('❌ Error conectando a MongoDB:', error));
+  .then(() => console.log("✅ Conectado a MongoDB"))
+  .catch((err) => console.error("❌ Error conectando a MongoDB:", err));
 
-// Modelo Trabajo (si no lo tenés ya definido)
-const trabajoSchema = new mongoose.Schema({
-  nombre: String,
-  cliente: String,
-  tipo: String,
-  tarifa: Number,
-  operador: String,
-  fecha: Date,
+// Modelo
+const TrabajoSchema = new mongoose.Schema({
+  titulo: String,
+  descripcion: String,
+  estado: String,
 });
-const Trabajo = mongoose.model('Trabajo', trabajoSchema);
 
-// ENDPOINTS
+const Trabajo = mongoose.model("Trabajo", TrabajoSchema);
 
-// GET todos los trabajos
-app.get('/api/trabajos', async (req, res) => {
+// Rutas
+app.get("/api/trabajos", async (req, res) => {
   try {
     const trabajos = await Trabajo.find();
     res.json(trabajos);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener trabajos' });
+  } catch (err) {
+    console.error("Error al obtener trabajos:", err);
+    res.status(500).json({ error: "Error al obtener trabajos" });
   }
 });
 
-// POST crear nuevo trabajo
-app.post('/api/trabajos', async (req, res) => {
-  try {
-    const nuevoTrabajo = new Trabajo(req.body);
-    await nuevoTrabajo.save();
-    res.status(201).json(nuevoTrabajo);
-  } catch (error) {
-    res.status(400).json({ error: 'Error al crear trabajo' });
-  }
-});
-
-// Levantar servidor
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
+  console.log("🚀 Servidor corriendo en puerto", PORT);
 });
