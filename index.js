@@ -6,7 +6,8 @@ const app = express();
 app.use(express.json());
 
 // Conexión a MongoDB (solo con la URI, sin useNewUrlParser ni useUnifiedTopology)
-mongoose.connect(process.env.MONGODB_URI)
+mongoose
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log('🔗 Conectado a MongoDB Atlas'))
   .catch((error) => console.error('❌ Error conectando a MongoDB:', error));
 
